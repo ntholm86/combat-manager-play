@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fantasy Combat Manager has moved</title>
+  <link rel="canonical" href="https://fantasycombatmanager.com/" />
+  <!-- What GitHub Pages serves at ntholm86.github.io/combat-manager-play since the game moved (docs/HOSTING.md). Browser storage belongs to an
+       address, so a visitor's saved campaigns are here, not there: this page carries them in the link's fragment, which never reaches a
+       server, and the game files them into empty slots (receiveCarried in apps/viewer/src/store.ts). Nothing is deleted from this browser. -->
+  <style>
+    html, body { margin: 0; min-height: 100%; background: #0b0c10; }
+    body { display: flex; min-height: 100vh; box-sizing: border-box; padding: 24px; background: radial-gradient(ellipse at 50% 40%, #2a425b, #121e2c 70%);
+      color: #f7f3e8; font-family: Consolas, "Courier New", monospace; text-align: center; }
+    .plate { box-sizing: border-box; width: min(384px, 100%); margin: auto; padding: 32px; border: 1px solid #b8860b; border-radius: 8px;
+      background: #121e2c; box-shadow: 0 16px 64px #0006; }
+    .wordmark { margin: 0 0 24px; color: #f0c674; font-size: 24px; letter-spacing: 1px; }
+    h1 { margin: 0 0 16px; font-size: 16px; font-weight: 400; }
+    p { margin: 0 0 24px; color: #c9d9ea; font-size: 12px; line-height: 1.6; }
+    a.go { display: inline-block; padding: 8px 16px; border: 1px solid #b8860b; border-radius: 4px; color: #f0c674; text-decoration: none; }
+    a.go:hover, a.go:focus-visible { outline: 2px solid #f0c674; outline-offset: 4px; }
+  </style>
+</head>
+<body>
+  <main class="plate">
+    <p class="wordmark">Fantasy Combat Manager</p>
+    <h1>The game has a new home</h1>
+    <p id="saves">Play on at fantasycombatmanager.com.</p>
+    <a class="go" id="go" href="https://fantasycombatmanager.com/">Continue</a>
+  </main>
+  <script>
+    (function () {
+      var home = "https://fantasycombatmanager.com/";
+      var base = "combatmanager.campaign.v1";
+      var saves = [];
+      try {
+        [base, base + ".slot2", base + ".slot3"].forEach(function (key) {
+          var raw = localStorage.getItem(key);
+          if (!raw) return;
+          var playedAt = null;
+          try { playedAt = JSON.parse(localStorage.getItem(key + ".meta")).playedAt; } catch (e) { /* no note of when it was played */ }
+          saves.push({ raw: raw, playedAt: typeof playedAt === "number" ? playedAt : null });
+        });
+      } catch (e) { /* storage blocked: nothing to carry */ }
+      if (!saves.length) { location.replace(home); return; }
+      var bytes = new TextEncoder().encode(JSON.stringify(saves));
+      var binary = "";
+      for (var i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+      var carry = btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      document.getElementById("go").href = home + "#carry=" + carry;
+      document.getElementById("saves").textContent = saves.length === 1
+        ? "Your saved campaign comes with you." : "Your " + saves.length + " saved campaigns come with you.";
+    })();
+  </script>
+</body>
+</html>
